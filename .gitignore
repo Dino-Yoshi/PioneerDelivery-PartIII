@@ -1,1 +1,32 @@
+# Build output
+build/
+/pioneer
+*.o
+*.obj
+*.exe
+*.out
+*.log
+logs/
+
+# Editor and OS files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Credentials and operational state (not part of the product)
+.env
+.env.*
+*.pem
+*.key
+credentials*
+secrets*
+.agentctl/
+checkpoints/
+worker-state/
+*.session
+
+# Handoff archives
 PioneerDelivery-PartIII-Handoff.zip
