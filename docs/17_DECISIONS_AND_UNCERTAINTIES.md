@@ -49,3 +49,19 @@ If specification, interface, security, model, or rubric interpretations conflict
 ## Known source oddity
 
 The source PDF's C Example 4 explanation contains a stray paragraph repeating Example 1. The official numerical examples and C1–C4 requirements remain authoritative; do not silently reinterpret the input.
+
+## Approved decisions and deviations log
+
+All entries approved by the human owner on 2026-11-11 during the pre-execution interview.
+
+| Date | Decision | Rationale / impact |
+|---|---|---|
+| 2026-11-11 | **Kiro auth in containers uses a private per-container copy of only the `auth_kv` login table from the host Kiro database, not `KIRO_API_KEY`.** Deviation from `16_ENVIRONMENT_PREFLIGHT.md`. | Kiro is already logged in on the host (GitHub login) and no headless key exists. Matches the owner's existing REA builder pipeline. Chat history is never copied. Credential presence, never value, is recorded at G0. G0 stays BLOCKED if the Podman sandbox escape test fails. |
+| 2026-11-11 | **Container runtime is rootless Podman** (6.x). Docker is not used for workers. | Preferred by `16`. Rootless verified on the host before G0 sign-off. |
+| 2026-11-11 | **Layout:** `p3/` is the `main` checkout. Worker worktrees live in `../p3-worktrees/`. Operational state (logs, checkpoints, Kiro session IDs, escape-test scratch) lives in `../p3-ops/`. Both are outside the repository. | Keeps writable worker mounts away from the repository's shared Git metadata (`08_ISOLATION_AND_SECURITY.md`) and prevents committing operational state. |
+| 2026-11-11 | **Push policy:** everything except `main` may be pushed after gates pass. `main` is pushed only at G5 with explicit owner approval. | Remote `origin` is the private repository `Dino-Yoshi/PioneerDelivery-PartIII`. |
+| 2026-11-11 | **Commit authorship:** author and committer are the owner's configured Git identity. Each commit carries the `Co-Authored-By: Claude Sonnet 5.5` trailer. Commits of worker-produced code name the worker, ticket and gate in the body. | Keeps history consistent with the Task D disclosure. |
+| 2026-11-11 | **Resource limits:** at most 4 parallel workers, each limited to 3 GiB RAM, 2 CPUs and a process cap. **DP table cap in `pioneer`:** 256 MiB for Tasks B and C, a named constant with a boundary test, exceeding it gives an explicit error. Retry limit is 3 per ticket, then stop and report. | Host has 12 cores and 31 GiB RAM, shared with other work. Values to be verified as actually enforced at G0. |
+| 2026-11-11 | **Prebuilt package:** static x86_64 Linux binary. G5-U cold-start trial runs in a clean Debian Podman container without a toolchain. Support claim is limited to x86_64 Linux as tested there. | Honest, reproducible and timeable by the orchestrator. |
+| 2026-11-11 | **Attribution:** owner is sole human author and original developer. Disclose Claude Code (Sonnet 5.5), Kiro (Haiku 5.5) and any other tool actually used. State that the owner helped set up and plan the project and was present throughout, with implementation check-ins. Owner approves final wording at G5. | Satisfies the truthful-disclosure requirement of the assignment. |
+| 2026-11-11 | **Kiro worker model ID:** `claude-haiku-5.5` appears in `kiro-cli chat --list-models`; effort via `--effort medium`. Flags are re-confirmed at G0. | Local verification, not a design change. |
