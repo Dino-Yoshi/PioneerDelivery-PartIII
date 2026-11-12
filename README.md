@@ -14,9 +14,8 @@ solved with dynamic programming:
 ### Toolchain
 
 Any C++20 compiler with CMake 3.20 or newer. No external libraries are needed. These toolchains
-built the program with 0 warnings and passed all 9 tests (continuous-integration run
-[43142383981](https://github.com/Dino-Yoshi/PioneerDelivery-PartIII/actions/runs/43142383981),
-plus local builds):
+built the program with 0 warnings and passed all 9 tests (a continuous-integration run on GitHub Actions, run 43142383981, plus local builds;
+see `docs/gates/Portability.md`):
 
 | Platform | Compiler | CMake |
 |---|---|---|
