@@ -1,6 +1,6 @@
 # OPS-01 — Isolated worker lifecycle and resume utility
 
-- **Status:** NOT STARTED
+- **Status:** SKIPPED by owner decision (2026-11-11); see docs/17
 - **Owner:** W1
 - **Prerequisite:** SETUP-01
 - **Acceptance gate:** G1 plus operational proof

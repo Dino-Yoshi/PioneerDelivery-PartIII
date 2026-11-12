@@ -1,6 +1,6 @@
 # Ticket Index — Pioneer Delivery Part III
 
-**ACCEPTED: SETUP-01, CORE-01 (G1); A-01, A-02, B-01, B-02, C-01, C-02 (G2, G3); TEST-01 (G3); DOC-01 (skeleton, G2). NOT STARTED: OPS-01, DOC-02, UX-01, RELEASE-01.** Statuses are updated only after verified evidence.
+**ACCEPTED: SETUP-01, CORE-01 (G1); A-01, A-02, B-01, B-02, C-01, C-02 (G2, G3); TEST-01 (G3); DOC-01 (skeleton, G2). SKIPPED by owner: OPS-01. NOT STARTED: DOC-02, UX-01, RELEASE-01.** Statuses are updated only after verified evidence.
 
 | Ticket | Owner | Depends on | Goal |
 |---|---|---|---|
