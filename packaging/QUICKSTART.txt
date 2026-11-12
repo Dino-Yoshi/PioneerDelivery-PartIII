@@ -1,0 +1,95 @@
+PIONEER QUICK START
+===================
+
+Pioneer solves three delivery-planning problems with dynamic programming: choosing
+non-overlapping deliveries for profit, choosing deliveries within a fuel budget, and
+deleting log events while a pattern still appears in order.
+
+You need nothing else installed. Run every command from the folder you extracted.
+
+1. Show the commands:
+
+     ./pioneer --help
+
+2. Run the three examples. Each output below came from running this program on the
+   example file named in the command.
+
+   a) Weighted interval scheduling
+
+     ./pioneer schedule --input examples/schedule.txt
+
+     Input (examples/schedule.txt): the first line is the number of deliveries; each
+     following line is: id start finish profit.
+
+     Weighted interval scheduling
+     Maximum profit: 180.00
+     Selected deliveries (3): B, D, F
+
+     Read it as: B, D, and F do not overlap in time, and together they earn 180.00.
+     A delivery that finishes at time t may be followed by one that starts at time t
+     (B finishes at 4 and D starts at 4, so both can be chosen).
+
+   b) Knapsack with a fuel budget
+
+     ./pioneer knapsack --input examples/knapsack.txt
+
+     Input (examples/knapsack.txt): the first line is "number-of-deliveries fuel-budget";
+     each following line is: id fuel-cost profit.
+
+     Delivery selection with a fuel budget
+     Maximum profit: 53
+     Total fuel used: 10
+     Selected deliveries (3): Q, R, S
+
+     Read it as: Q, R, and S use 10 fuel (the whole budget) and earn 53 in total.
+
+   c) Event log cleanup
+
+     ./pioneer cleanup --input examples/cleanup.txt
+
+     Input (examples/cleanup.txt): line 1 is the log (source), line 2 is the pattern that
+     must still appear in order, line 3 is how many positions are listed on line 4, and
+     line 4 lists the positions you are allowed to delete, counting from 0. Here only
+     positions 0, 1 and 2 of "abbaa" may be deleted (the 3 on line 3 is just that count;
+     it is not the number of deletions the program will make).
+
+     Event log cleanup
+     Maximum deletions: 1
+     Removed original indices (1): 2
+
+     Read it as: at most 1 of the 3 allowed characters can be deleted. Positions are
+     counted from 0, so "Removed original indices (1): 2" means the third character.
+     Deleting the character at position 2 leaves "abaa", which still contains a, b, a
+     in order.
+     Deleting two of the allowed characters would break the pattern. (Deleting position
+     1 instead would also work; any one best answer is acceptable.)
+
+3. Other options
+
+   --input PATH   Read the problem from a file. Without it, the problem is read from
+                  standard input.
+   --machine      Print plain key=value lines for scripts. For example:
+
+     ./pioneer schedule --machine --input examples/schedule.txt
+
+     max_profit=180.00
+     selected_count=3
+     selected_ids=B,D,F
+
+   Each command also has its own help, which shows the input format and an example:
+
+     ./pioneer schedule --help
+     ./pioneer knapsack --help
+     ./pioneer cleanup --help
+
+   Exit status: 0 means success, 1 means the file could not be read, and 2 means the
+   command or the input was invalid. Error messages go to standard error.
+
+To make your own problem, copy one of the files in examples/ and edit it. Each help
+page describes the format.
+
+Tested platform
+---------------
+Built and checked inside a Debian GNU/Linux 13 (trixie) container. The archive is
+labeled x86_64 because the packaging script refuses to build on any other CPU. No
+other distributions or CPU types have been tested.
