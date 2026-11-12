@@ -1,6 +1,6 @@
 # TEST-01 — Independent exhaustive oracles and integration verification
 
-- **Status:** NOT STARTED
+- **Status:** ACCEPTED at G3 (oracle programs, integration); final evidence recording continues in DOC-02
 - **Owner:** W5
 - **Prerequisite:** CORE-01; algorithm results for final runs
 - **Acceptance gate:** G3

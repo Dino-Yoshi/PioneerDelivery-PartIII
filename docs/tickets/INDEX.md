@@ -1,6 +1,6 @@
 # Ticket Index — Pioneer Delivery Part III
 
-**SETUP-01 and CORE-01: ACCEPTED at G1 (integration 250c219). All other tickets: NOT STARTED.** Statuses are updated only after verified evidence.
+**ACCEPTED: SETUP-01, CORE-01 (G1); A-01, A-02, B-01, B-02, C-01, C-02 (G2, G3); TEST-01 (G3); DOC-01 (skeleton, G2). NOT STARTED: OPS-01, DOC-02, UX-01, RELEASE-01.** Statuses are updated only after verified evidence.
 
 | Ticket | Owner | Depends on | Goal |
 |---|---|---|---|

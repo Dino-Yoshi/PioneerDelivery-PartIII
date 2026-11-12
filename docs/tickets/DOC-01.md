@@ -1,6 +1,6 @@
 # DOC-01 — README and LaTeX report skeleton
 
-- **Status:** NOT STARTED
+- **Status:** ACCEPTED as skeletons at G2; README and report content still PENDING
 - **Owner:** W5
 - **Prerequisite:** SETUP-01
 - **Acceptance gate:** G5 prep
