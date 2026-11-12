@@ -2,7 +2,7 @@
 %
 % STATUS: NOT COMPILED. The authoring container has no TeX installation, so this source has
 % not been run through pdflatex or latexmk. Every statement describes the code in src/ and
-% the results in docs/TestResults.md. Owner-confirmed items remain PENDING.
+% the results in docs/TestResults.md. Remaining owner-confirmed items are marked PENDING.
 
 \documentclass[11pt]{article}
 \usepackage[margin=1in]{geometry}
@@ -251,10 +251,12 @@ mutants, not every possible fault.
   the host (GCC 16.2, CMake 4.4), 9 of 9 CTest tests, brute-force oracle comparison on named cases
   plus seeds 1 to 25, a four-bug mutation test, end-to-end CLI checks. The numbers come from
   \texttt{docs/gates/}.
-\item The human project owner helped set up and plan the project and was present throughout, with
-  check-ins on the implementation. Exact roles, names and the original Pioneer Delivery developer:
-  \textbf{PENDING: owner confirmation.} Who prepared the original design handoff documents:
-  \textbf{PENDING: owner confirmation.}
+\item The design handoff documents (the specifications, tickets and worker briefs that the work
+  followed) were prepared with GPT-6 (High reasoning setting), as reported by the project owner.
+\item Human contribution. The project owner is the original developer of Pioneer Delivery and
+  is also the Part III owner. The owner set up the project and tools, planned the work, made the
+  executive decisions, made the check-ins on the implementation, managed the final deliverables, and
+  handled the tasks the agents could not do themselves.
 \end{itemize}
 
 % ---------------------------------------------------------------------------

@@ -13,20 +13,50 @@ solved with dynamic programming:
 
 ### Toolchain
 
-- C++20, built with GCC 14.2.0. CMake recorded this compiler in `build/CMakeFiles/3.31.6/CMakeCXXCompiler.cmake`.
-- CMake 3.31.6 (`cmake --version`), with the Ninja generator.
-- Linux. No external libraries are needed.
+Any C++20 compiler with CMake 3.20 or newer. No external libraries are needed. These toolchains
+built the program with 0 warnings and passed all 9 tests (continuous-integration run
+[43142383981](https://github.com/Dino-Yoshi/PioneerDelivery-PartIII/actions/runs/43142383981),
+plus local builds):
+
+| Platform | Compiler | CMake |
+|---|---|---|
+| Linux x86_64 (Debian 13 container) | GCC 14.2.0 | 3.31.6 |
+| Linux x86_64 (host) | GCC 16.2.1 | 4.4.5 |
+| Linux x86_64 (GitHub Ubuntu runner) | GCC 15.2.0 | 4.4.5 |
+| macOS 26, Apple Silicon (GitHub runner) | Apple Clang 21.0.0 | 4.4.5 |
+| Windows (GitHub runner) | Microsoft Visual C++ (MSVC) 19.51 | 4.4.5 |
+
+Other compilers and platforms (for example MinGW on Windows) are expected to work but have not
+been tested.
 
 ### Build
 
+**Linux and macOS** (any shell):
+
 ```bash
-cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build
+ctest --test-dir build --output-on-failure
 ```
+
+**Windows** (Visual Studio 2022 or newer, or its Build Tools, plus CMake; run these in PowerShell,
+cmd, or a Developer prompt):
+
+```bat
+cmake -S . -B build
+cmake --build build --config Release
+ctest --test-dir build -C Release --output-on-failure
+```
+
+With the Visual Studio generator the program is `build\Release\pioneer.exe`. With a
+single-configuration generator (Makefiles, Ninja) on any system it is `build/pioneer`
+(`build\pioneer.exe` on Windows). Ninja is optional; add `-G Ninja` if you have it.
 
 ### Run one example per task
 
-The commands below use the fixtures in `tests/fixtures/`.
+The commands below use the fixtures in `tests/fixtures/` and the binary path `build/pioneer`. On
+Windows with Visual Studio use `build\\Release\\pioneer.exe` and backslashes in paths, for example
+`build\\Release\\pioneer.exe schedule --input tests\\fixtures\\A-01.txt`.
 
 ```bash
 build/pioneer schedule --input tests/fixtures/A-01.txt
@@ -157,15 +187,27 @@ index0 index1 ... index(k-1)
 
 ## Standard input
 
-Without `--input`, a command reads standard input:
+Without `--input`, a command reads standard input. This works the same on every platform, and
+the output matches `--input`:
 
 ```bash
-build/pioneer schedule < examples/schedule.txt
+build/pioneer schedule < examples/schedule.txt          # Linux, macOS, cmd
 ```
 
-This works with the stdin input as well: the output is identical to `--input`. It was run
-for `schedule`, `knapsack` and `cleanup` on the example files and the outputs matched
-(orchestrator check, recorded in `docs/gates/G3.md`).
+```powershell
+Get-Content examples\schedule.txt | build\Release\pioneer.exe schedule    # PowerShell
+```
+
+PowerShell has no `<` redirection, so pipe the file in as shown. All of these were run in
+continuous integration on Windows (PowerShell and cmd), macOS and Linux, and for all three
+commands on Linux (orchestrator check, `docs/gates/G3.md`).
+
+## Input files from Windows
+
+Input files may use LF or CRLF line endings, and may start with a UTF-8 byte order mark (which
+Notepad can add); the mark is ignored. A UTF-16 file is rejected with a clear message (exit 2):
+Windows PowerShell `>` and `Out-File` write UTF-16 by default, so save inputs as UTF-8 or ASCII,
+for example with `Out-File -Encoding ascii`. These cases are covered by the `cli_checks` test.
 
 ## Size limits
 
@@ -234,11 +276,12 @@ The archive is not published anywhere; build it with the script above.
 
 ## Development and attribution
 
-- Original Pioneer Delivery developer: PENDING owner confirmation.
-- Part III human project owner: PENDING owner confirmation.
-- Human project owner: helped set up and plan the project, was present throughout, and gave
-  check-ins on the implementation. Exact roles and names: PENDING owner confirmation.
-- Who prepared the original design handoff documents: PENDING owner confirmation.
+- Original Pioneer Delivery developer: the project owner, who is also the Part III owner.
+- Human contribution: the project owner set up the project and tools, planned the work, made
+  the executive decisions, made the check-ins on the implementation, managed the final
+  deliverables, and handled the tasks the agents could not do themselves.
+- AI assistance: the design handoff documents (specifications, tickets and worker briefs) were
+  prepared with GPT-6 (High reasoning setting), as reported by the project owner.
 - AI assistance: Claude Code with Claude Sonnet 5.5 acted as orchestrator. It read the
   assignment and the design handoff, created the repository and branches, dispatched and reviewed
   the workers, re-ran every build and test itself, ran a mutation test of the test suites, merged
