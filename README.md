@@ -163,9 +163,9 @@ Without `--input`, a command reads standard input:
 build/pioneer schedule < examples/schedule.txt
 ```
 
-This example is taken from `docs/05_CLI_CONTRACT.md`. It was not run in the authoring container,
-because the shell there does not allow input redirection. Orchestrator verification of this
-example is PENDING.
+This works with the stdin input as well: the output is identical to `--input`. It was run
+for `schedule`, `knapsack` and `cleanup` on the example files and the outputs matched
+(orchestrator check, recorded in `docs/gates/G3.md`).
 
 ## Size limits
 
@@ -200,9 +200,9 @@ O(nm).
 
 - [docs/TestResults.md](docs/TestResults.md): one row per named case with input summary, expected
   value, actual output, exit code, and check result.
-- [docs/AlgorithmReport.tex](docs/AlgorithmReport.tex): the algorithm report source. The PDF
-  (`docs/AlgorithmReport.pdf`) is not in this workspace, because no TeX installation was available
-  to build it.
+- [docs/AlgorithmReport.tex](docs/AlgorithmReport.tex): the algorithm report source. It is built
+  to `docs/AlgorithmReport.pdf` with `latexmk -pdf` (needs a TeX installation with the packages
+  booktabs, listings, hyperref and geometry).
 - `tests/fixtures/`: the named test inputs (`A-01` to `A-08`, `B-01` to `B-08`, `C-01` to `C-10`)
   and invalid inputs (`invalid-*.txt`).
 
@@ -221,7 +221,16 @@ docs/                      CLI contract, test plan, TestResults.md, AlgorithmRep
 
 ## Prebuilt Linux quick start
 
-PENDING until the archive is built and timed
+A statically linked x86_64 Linux archive can be built from this repository with
+`bash tools/package-linux.sh` (needs `cmake`, `ninja`, `strip`, `readelf`, `tar`, `sha256sum`;
+it writes `dist/pioneer-linux-x86_64.tar.gz` and a `.sha256` file; two builds of the same sources
+produced byte-identical archives). The archive holds the `pioneer` binary, a one-page
+`README.txt`, and the three example inputs. Nothing else is needed to run it.
+
+Tested: the archive with SHA-256 `3b126a7246bfb062cd40c04a5562420d04796371be2dcc10444f54b813cde4b0` was extracted and run in a clean
+Debian GNU/Linux 13 (trixie) x86_64 container that has no compiler, no CMake and no network, and all
+three examples printed the expected results. Other distributions and CPU types are not tested.
+The archive is not published anywhere; build it with the script above.
 
 ## Development and attribution
 
