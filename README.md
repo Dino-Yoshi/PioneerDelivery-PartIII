@@ -23,7 +23,7 @@ plus local builds):
 | Linux x86_64 (Debian 13 container) | GCC 14.2.0 | 3.31.6 |
 | Linux x86_64 (host) | GCC 16.2.1 | 4.4.5 |
 | Linux x86_64 (GitHub Ubuntu runner) | GCC 15.2.0 | 4.4.5 |
-| macOS 26, Apple Silicon (GitHub runner) | Apple Clang 21.0.0 | 4.4.5 |
+| macOS (Darwin 25.6, Apple Silicon, GitHub runner) | Apple Clang 21.0.0 | 4.4.5 |
 | Windows (GitHub runner) | Microsoft Visual C++ (MSVC) 19.51 | 4.4.5 |
 
 Other compilers and platforms (for example MinGW on Windows) are expected to work but have not
@@ -206,7 +206,7 @@ commands on Linux (orchestrator check, `docs/gates/G3.md`).
 
 Input files may use LF or CRLF line endings, and may start with a UTF-8 byte order mark (which
 Notepad can add); the mark is ignored. A UTF-16 file is rejected with a clear message (exit 2):
-Windows PowerShell `>` and `Out-File` write UTF-16 by default, so save inputs as UTF-8 or ASCII,
+Windows PowerShell 5.1 writes UTF-16 with `>` and `Out-File` by default (PowerShell 7 writes UTF-8), so save inputs as UTF-8 or ASCII,
 for example with `Out-File -Encoding ascii`. These cases are covered by the `cli_checks` test.
 
 ## Size limits

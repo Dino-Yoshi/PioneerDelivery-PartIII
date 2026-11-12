@@ -19,7 +19,7 @@
 
 - Tested compilers: GCC, Apple Clang and MSVC only. MinGW, Intel Macs, 32-bit systems and older Visual Studio versions are not tested.
 - The CI run exercises the source build and the examples. It does not time a cold start on Windows or macOS and does not produce a prebuilt Windows or macOS package; those users build from the source ZIP with the commands in `README.md`.
-- Console output on Windows uses native CRLF line endings; `--machine` consumers on Windows should trim a trailing carriage return.
+- Line endings of the program's own output on Windows were not examined; the CI bash checks strip carriage returns before comparing.
 
 ## Decision
 
