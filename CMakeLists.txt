@@ -37,6 +37,26 @@ if(BUILD_TESTING)
   target_link_libraries(formatter_tests PRIVATE pioneer_core)
   target_compile_options(formatter_tests PRIVATE ${pioneerWarnings})
 
+  # Algorithm and oracle tests. Each worker adds its own test file; a target
+  # exists only when its file does, so the foundation builds without them.
+  foreach(testName IN ITEMS SchedulingTests KnapsackTests CleanupTests)
+    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/tests/${testName}.cpp)
+      add_executable(${testName} tests/${testName}.cpp)
+      target_link_libraries(${testName} PRIVATE pioneer_core)
+      target_compile_options(${testName} PRIVATE ${pioneerWarnings})
+      add_test(NAME ${testName} COMMAND ${testName})
+    endif()
+  endforeach()
+  foreach(testName IN ITEMS SchedulingOracleTests KnapsackOracleTests CleanupOracleTests)
+    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/tests/oracles/${testName}.cpp)
+      add_executable(${testName} tests/oracles/${testName}.cpp)
+      target_include_directories(${testName} PRIVATE tests)
+      target_link_libraries(${testName} PRIVATE pioneer_core)
+      target_compile_options(${testName} PRIVATE ${pioneerWarnings})
+      add_test(NAME ${testName} COMMAND ${testName})
+    endif()
+  endforeach()
+
   add_test(NAME parser_tests COMMAND parser_tests)
   add_test(NAME formatter_tests COMMAND formatter_tests)
   add_test(NAME cli_checks
