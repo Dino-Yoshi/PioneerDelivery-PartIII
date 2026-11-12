@@ -1,6 +1,6 @@
 # RELEASE-01 — Integrated release, source ZIP and human signoff
 
-- **Status:** NOT STARTED
+- **Status:** DONE except merge to main and push
 - **Owner:** Orchestrator
 - **Prerequisite:** all prior tickets + G5/G5-U
 - **Acceptance gate:** Release gate
