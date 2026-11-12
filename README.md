@@ -293,4 +293,4 @@ The archive is not published anywhere; build it with the script above.
   (GCC 16.2, CMake 4.4); 9 of 9 CTest tests; brute-force oracle comparison on named cases plus
   seeds 1 to 25; a four-bug mutation test; end-to-end CLI checks. The numbers come from
   `docs/gates/`.
-- Lesson learned: PENDING owner confirmation.
+- Lesson learned: Sequence alignment, which is Task C, was the hardest part for me, and its mostly because I didn't know where to start. At first, my plan was to loop over the strings and delete what seemed appropriate. Most of my progress came from reading, speculation, and guesswork, not from solving it on my own. The tests passed, but I don't consider that the same as understanding it. Truthfully, I do a lot better on things when I have existing practice surrounding those issues beforehand. To do something that I don't feel confident in, my approach will most definitely show it.
