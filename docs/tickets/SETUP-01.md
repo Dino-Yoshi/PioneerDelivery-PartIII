@@ -1,6 +1,6 @@
 # SETUP-01 — Repository and build foundation
 
-- **Status:** NOT STARTED
+- **Status:** ACCEPTED at G1 (2026-11-11), integration 250c219
 - **Owner:** W1
 - **Prerequisite:** none
 - **Acceptance gate:** G1

@@ -1,6 +1,6 @@
 # CORE-01 — Shared interfaces, CLI parsing, output, help
 
-- **Status:** NOT STARTED
+- **Status:** ACCEPTED at G1 (2026-11-11), integration 250c219
 - **Owner:** W1
 - **Prerequisite:** SETUP-01
 - **Acceptance gate:** G1

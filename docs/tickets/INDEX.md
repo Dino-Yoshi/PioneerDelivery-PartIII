@@ -1,6 +1,6 @@
 # Ticket Index — Pioneer Delivery Part III
 
-**All ticket statuses: NOT STARTED.** These are planned acceptance contracts; no code/tests have been executed.
+**SETUP-01 and CORE-01: ACCEPTED at G1 (integration 250c219). All other tickets: NOT STARTED.** Statuses are updated only after verified evidence.
 
 | Ticket | Owner | Depends on | Goal |
 |---|---|---|---|
