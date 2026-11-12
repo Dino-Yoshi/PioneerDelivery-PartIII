@@ -1,0 +1,4 @@
+abbaa
+aba
+three
+0 1 2

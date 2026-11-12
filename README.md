@@ -1,99 +1,121 @@
 # Pioneer Delivery: dynamic programming tools
 
-**Status:** The command-line interface and the test harnesses build. The three solvers
-(`solveScheduling`, `solveKnapsack`, `solveCleanup`) are still stubs that throw
-`not implemented`, so the `schedule`, `knapsack`, and `cleanup` commands currently exit with
-status 1. The three oracle test programs fail for the same reason. Real results will be
-recorded in `docs/TestResults.md` once the solvers are merged.
+`pioneer` is a command-line program for three delivery-planning problems. Each problem is
+solved with dynamic programming:
 
-## What pioneer is
-
-pioneer is a command-line program for three planning problems that Pioneer Delivery needs:
-choosing non-overlapping deliveries for one driver, choosing deliveries under a fuel budget,
-and removing unneeded event-log entries while keeping a required event sequence. Each problem
-is solved with dynamic programming.
+- **schedule**: choose non-overlapping deliveries for one driver with the largest total profit
+  (weighted interval scheduling).
+- **knapsack**: choose deliveries within a fuel budget with the largest total profit (0/1 knapsack).
+- **cleanup**: delete as many events as possible from an event log, using only listed
+  positions, while a required event sequence stays a subsequence of the log.
 
 ## Quick start
 
-Toolchain seen in this environment: GCC 14.2.0 and CMake 3.31.6. These are the canonical
-build tools for this project.
+### Toolchain
 
-### 1. Build (verified in this session)
+- C++20, built with GCC 14.2.0. CMake recorded this compiler in `build/CMakeFiles/3.31.6/CMakeCXXCompiler.cmake`.
+- CMake 3.31.6 (`cmake --version`), with the Ninja generator.
+- Linux. No external libraries are needed.
+
+### Build
 
 ```bash
 cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
 cmake --build build
 ```
 
-Both commands exited 0 with no compiler warnings. The build without
-`-DCMAKE_BUILD_TYPE=Release` is `PENDING (not yet verified)`.
+### Run one example per task
 
-### 2. Run the tests (verified in this session)
+The commands below use the fixtures in `tests/fixtures/`.
+
+```bash
+build/pioneer schedule --input tests/fixtures/A-01.txt
+```
+
+```text
+Weighted interval scheduling
+Maximum profit: 180.00
+Selected deliveries (3): B, D, F
+```
+
+```bash
+build/pioneer knapsack --input tests/fixtures/B-01.txt
+```
+
+```text
+Delivery selection with a fuel budget
+Maximum profit: 53
+Total fuel used: 10
+Selected deliveries (3): Q, R, S
+```
+
+```bash
+build/pioneer cleanup --input tests/fixtures/C-01.txt
+```
+
+```text
+Event log cleanup
+Maximum deletions: 1
+Removed original indices (1): 2
+```
+
+### Machine-readable output
+
+Add `--machine` to print stable `key=value` lines:
+
+```bash
+build/pioneer schedule --input tests/fixtures/A-01.txt --machine
+```
+
+```text
+max_profit=180.00
+selected_count=3
+selected_ids=B,D,F
+```
+
+The knapsack keys are `max_profit`, `total_fuel`, `selected_count`, and `selected_ids`. The
+cleanup keys are `max_deletions`, `removed_count`, and `removed_indices`.
+
+### Run the tests
 
 ```bash
 ctest --test-dir build --output-on-failure
 ```
 
-Current result: exit status 8. Three of six tests pass: `parser_tests`, `formatter_tests`, and
-`cli_checks`. The three oracle tests fail because the solvers are stubs. Each oracle program
-first checks its oracle against the expected values (8, 8, and 10 checks passed). Its second
-phase then fails with `not implemented`. A clean run is `PENDING` until the solvers are merged.
+All 9 tests pass: `SchedulingTests`, `KnapsackTests`, `CleanupTests`, three oracle programs
+(`SchedulingOracleTests`, `KnapsackOracleTests`, `CleanupOracleTests`), `parser_tests`,
+`formatter_tests`, and `cli_checks`. The full results are in [docs/TestResults.md](docs/TestResults.md).
 
-### 3. Get help (verified in this session)
+### Get help
 
 ```bash
 build/pioneer --help
+build/pioneer knapsack --help
 ```
 
-Exit status 0. The subcommand help (`build/pioneer schedule --help` and the others) is
-`PENDING (not yet verified)`.
+Each subcommand help prints its input grammar and a small example.
 
-### 4. Run each command on the example files
-
-```bash
-build/pioneer schedule --input examples/schedule.txt
-build/pioneer knapsack --input examples/knapsack.txt
-build/pioneer cleanup --input examples/cleanup.txt
-build/pioneer knapsack --input examples/knapsack.txt --machine
-```
-
-In this session each command exited 1 with `pioneer: <Task>: not implemented` on stderr,
-because the solvers are stubs. The expected readable output is `PENDING (not yet verified)`.
-Reading from standard input (`build/pioneer schedule < examples/schedule.txt`) is
-`PENDING (not yet verified)`.
-
-### Options
+## Commands and options
 
 | Option | Meaning |
 |---|---|
-| `--input PATH` | Read the problem from PATH. Without it, the problem is read from stdin. |
-| `--machine` | Print stable `key=value` lines instead of the readable report. |
+| `--input PATH` | Read the problem from `PATH`. Without it, the problem is read from standard input. |
+| `--machine` | Print `key=value` lines instead of the readable report. |
 | `-h`, `--help` | Show help and exit. |
 
-Exit status: `0` success or help, `1` operational failure (for example, an unreadable file),
-`2` usage error or invalid input. Diagnostics go to stderr.
+Exit status:
 
-## The three tasks
+| Code | Meaning |
+|---:|---|
+| 0 | Success or help. |
+| 1 | Operational failure, such as an unreadable file or a DP table over the size limit. |
+| 2 | Usage error or invalid input. |
 
-**Task A: maximum-profit delivery scheduling.** Choose deliveries for one driver so that the
-total profit is largest and no two chosen deliveries overlap; a delivery that finishes when
-another starts is compatible. The design sorts by finish time, finds each predecessor by binary
-search, and runs a weighted interval scheduling DP in O(n log n) time.
+Diagnostics go to standard error. Nothing is printed to standard output after a failure.
 
-**Task B: delivery selection with a fuel budget.** Choose each delivery at most once so that
-the total fuel stays within the budget and the total profit is largest. The design is a
-bottom-up 0/1 knapsack with a two-dimensional table, which takes O(nB) time and space, so the
-running time grows with the numeric value of the budget.
+## Input format
 
-**Task C: event-log cleanup.** Delete as many events as possible from a source string, using
-only listed original positions, while a required pattern stays a subsequence of the remaining
-string. The design fills a two-dimensional table over source and pattern prefixes in O(nm)
-time, then traces back one optimal set of deleted indices.
-
-## Input formats
-
-Summarised from `docs/05_CLI_CONTRACT.md`. Fields are whitespace-separated and blank lines are
-ignored. Diagnostics name the failing record or field.
+Fields are whitespace-separated. Blank lines are ignored.
 
 **schedule**
 
@@ -116,7 +138,7 @@ id fuelCost profit
 ... n records ...
 ```
 
-- `n`, `B`: nonnegative integers (number of deliveries, fuel budget).
+- `n`, `B`: nonnegative integers. `n` is the number of deliveries and `B` is the fuel budget.
 - `fuelCost`: positive integer. `profit`: nonnegative integer.
 
 **cleanup**
@@ -128,38 +150,96 @@ k
 index0 index1 ... index(k-1)
 ```
 
-- `source` and `pattern`: nonempty lowercase words on their own lines. `pattern` must already be a
-  subsequence of `source`.
-- `k`: nonnegative count. The index line is absent when `k` is `0`.
-- Indices: strictly increasing, within `[0, |source|)`, and allowed to span lines.
+- `source` and `pattern`: nonempty lowercase words, each on its own line. `pattern` must already
+  be a subsequence of `source`.
+- `k`: nonnegative count. When `k` is `0`, there is no index line.
+- Indices: strictly increasing, inside `[0, length of source)`. They may span several lines.
 
-Example for `--machine` output (contract; `PENDING (not yet verified)` against the implementation):
+## Standard input
 
-```text
-max_profit=180.00
-selected_count=3
-selected_ids=B,D,F
+Without `--input`, a command reads standard input:
+
+```bash
+build/pioneer schedule < examples/schedule.txt
 ```
 
-## Tests
+This example is taken from `docs/05_CLI_CONTRACT.md`. It was not run in the authoring container,
+because the shell there does not allow input redirection. Orchestrator verification of this
+example is PENDING.
 
-Three oracle programs live in `tests/oracles/`. Each one has two phases:
+## Size limits
 
-- `ORACLE SELF-CHECKS` runs a brute-force oracle on the named cases from
-  `docs/11_TEST_PLAN.md` and compares it with the expected values. The oracle enumerates subsets
-  (2^n for scheduling and knapsack, 2^k over eligible indices for cleanup).
-- `PRODUCTION COMPARISON` calls the real solver on the same named cases and on seeds 1 to 25,
-  compares the optimum with the oracle, and checks the reconstruction invariants.
+The knapsack and cleanup solvers allocate a two-dimensional table. The table is limited to
+256 MiB (268,435,456 bytes) and is refused before allocation when it would be larger.
 
-Named cases covered: A-01 to A-08, B-01 to B-08, and C-01 to C-10 (C-01 to C-04 are the four
-official examples). The `parser_tests`, `formatter_tests`, and `cli_checks` programs cover
-parsing, formatting, and CLI behaviour.
+- Knapsack: `(n+1) x (B+1)` cells of 8 bytes. The limit is 33,554,432 cells.
+- Cleanup: `(n+1) x (m+1)` cells of 4 bytes, where `n` is the source length and `m` is the pattern
+  length. The limit is 67,108,864 cells.
 
-## PENDING
+Knapsack with one delivery and budget `999999999999` fails with exit status 1. The run used
+`tests/fixtures/limit-knapsack-table.txt`:
 
-- **Tested prebuilt Linux download and timing:** PENDING (not yet verified).
-- **Final test results:** PENDING. See `docs/TestResults.md`; every actual value is still
-  `PENDING`.
-- **Attribution and generative AI disclosure:** PENDING (owner-confirmed text).
-- **Algorithm report:** `docs/AlgorithmReport.tex` is a skeleton. No TeX installation is
-  available in this container, so it has not been compiled. A compiled PDF is PENDING.
+```text
+pioneer: knapsack table: (n+1)=2 by (B+1)=1000000000000 is 2000000000000 cells, which exceeds the limit of 268435456 bytes (33554432 cells)
+```
+
+## The three tasks
+
+**Task A: schedule.** The solver sorts deliveries by finish time and finds each delivery's
+predecessor by binary search. The DP then runs in O(n log n) time with O(n) auxiliary space.
+
+**Task B: knapsack.** A bottom-up 0/1 knapsack fills a table of `(n+1) x (B+1)` cells. The time
+and space are O(nB), so the running time depends on the value of the budget, not on how many
+digits it has.
+
+**Task C: cleanup.** The solver fills a table over prefixes of `source` and `pattern`, and then
+traces back one optimal set of deleted indices. The time is O(nm) and the auxiliary space is
+O(nm).
+
+## Test evidence and report
+
+- [docs/TestResults.md](docs/TestResults.md): one row per named case with input summary, expected
+  value, actual output, exit code, and check result.
+- [docs/AlgorithmReport.tex](docs/AlgorithmReport.tex): the algorithm report source. The PDF
+  (`docs/AlgorithmReport.pdf`) is not in this workspace, because no TeX installation was available
+  to build it.
+- `tests/fixtures/`: the named test inputs (`A-01` to `A-08`, `B-01` to `B-08`, `C-01` to `C-10`)
+  and invalid inputs (`invalid-*.txt`).
+
+## Repository layout
+
+```text
+CMakeLists.txt             build and test definitions
+include/pioneer/           public headers: Input, Output, Scheduling, Knapsack, Cleanup
+src/                       parsers, formatter, the three solvers, and main.cpp (command line)
+tests/                     unit tests, CLI checks, and the test harness
+tests/oracles/             independent brute-force oracle programs
+tests/fixtures/            named and invalid input files
+examples/                  one example input per command
+docs/                      CLI contract, test plan, TestResults.md, AlgorithmReport.tex, gate records
+```
+
+## Prebuilt Linux quick start
+
+PENDING until the archive is built and timed
+
+## Development and attribution
+
+- Original Pioneer Delivery developer: PENDING owner confirmation.
+- Part III human project owner: PENDING owner confirmation.
+- Human project owner: helped set up and plan the project, was present throughout, and gave
+  check-ins on the implementation. Exact roles and names: PENDING owner confirmation.
+- Who prepared the original design handoff documents: PENDING owner confirmation.
+- AI assistance: Claude Code with Claude Sonnet 5.5 acted as orchestrator. It read the
+  assignment and the design handoff, created the repository and branches, dispatched and reviewed
+  the workers, re-ran every build and test itself, ran a mutation test of the test suites, merged
+  the branches, wrote the gate records, and made the Git commits.
+- AI assistance: Kiro CLI with Claude Haiku 5.5 ran five worker sessions. W1 built the CMake/CTest
+  skeleton, input parsers, output formatter, command-line interface, and help. W2 implemented Task A
+  (scheduling). W3 implemented Task B (knapsack). W4 implemented Task C (cleanup). W5 wrote the
+  independent brute-force oracle programs, test fixtures, and documentation drafts.
+- Verification: independent clean builds in a container (GCC 14.2, CMake 3.31) and on the host
+  (GCC 16.2, CMake 4.4); 9 of 9 CTest tests; brute-force oracle comparison on named cases plus
+  seeds 1 to 25; a four-bug mutation test; end-to-end CLI checks. The numbers come from
+  `docs/gates/`.
+- Lesson learned: PENDING owner confirmation.
