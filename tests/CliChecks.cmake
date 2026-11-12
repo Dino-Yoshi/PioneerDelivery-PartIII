@@ -111,4 +111,23 @@ requireText("missing input file stderr" "${lastStderr}" "cannot read input file"
 runPioneer("missing input file with --machine" 1 "" schedule --machine --input "${missingFile}")
 requireEmpty("missing input file (machine) stdout" "${lastStdout}")
 
+# Files from Windows editors: a UTF-8 byte order mark is accepted, UTF-16 is rejected with a
+# clear message. CRLF line endings are accepted too.
+string(ASCII 239 187 191 utf8Bom)
+file(WRITE "${WORK_DIR}/cli_bom_schedule.txt" "${utf8Bom}1\nA 0 1 5\n")
+runPioneer("UTF-8 BOM via --input" 0 "" schedule --machine --input "${WORK_DIR}/cli_bom_schedule.txt")
+requireText("UTF-8 BOM via --input" "${lastStdout}" "max_profit=5.00")
+runPioneer("UTF-8 BOM via stdin" 0 "${WORK_DIR}/cli_bom_schedule.txt" schedule --machine)
+requireText("UTF-8 BOM via stdin" "${lastStdout}" "max_profit=5.00")
+
+file(WRITE "${WORK_DIR}/cli_crlf_schedule.txt" "1\r\nA 0 1 5\r\n")
+runPioneer("CRLF line endings" 0 "" schedule --machine --input "${WORK_DIR}/cli_crlf_schedule.txt")
+requireText("CRLF line endings" "${lastStdout}" "max_profit=5.00")
+
+string(ASCII 255 254 utf16Bom)
+file(WRITE "${WORK_DIR}/cli_utf16_schedule.txt" "${utf16Bom}1\nA 0 1 5\n")
+runPioneer("UTF-16 input" 2 "" schedule --input "${WORK_DIR}/cli_utf16_schedule.txt")
+requireEmpty("UTF-16 input stdout" "${lastStdout}")
+requireText("UTF-16 input" "${lastStderr}" "looks like UTF-16")
+
 message(STATUS "CLI checks passed")

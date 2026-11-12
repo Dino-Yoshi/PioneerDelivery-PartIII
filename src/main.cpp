@@ -209,6 +209,27 @@ bool readInputText(const std::optional<std::string>& inputPath, std::string& tex
     return true;
 }
 
+// Normalizes text that came from a file written on Windows. A UTF-8 byte order mark, which
+// some editors add, is dropped. A UTF-16 file (the default output of some PowerShell
+// redirections) cannot be parsed, so it is named in the error instead of surfacing as a
+// confusing "invalid token". Returns an error message, or an empty string when the text
+// is usable.
+std::string prepareInputText(std::string& text) {
+    constexpr std::string_view kUtf8Bom = "\xEF\xBB\xBF";
+    if (text.size() >= kUtf8Bom.size() && text.compare(0, kUtf8Bom.size(), kUtf8Bom) == 0) {
+        text.erase(0, kUtf8Bom.size());
+    }
+    if (text.size() >= 2) {
+        const auto first = static_cast<unsigned char>(text[0]);
+        const auto second = static_cast<unsigned char>(text[1]);
+        if ((first == 0xFF && second == 0xFE) || (first == 0xFE && second == 0xFF)) {
+            return "the input looks like UTF-16 text. Save it as UTF-8 or ASCII and run again "
+                   "(in Windows PowerShell, use 'Out-File -Encoding ascii' instead of '>')";
+        }
+    }
+    return std::string();
+}
+
 // Parses, solves, and renders one task. Throws pioneer::InputError for invalid
 // input and std::exception for operational failures.
 std::string runTask(Task task, bool machine, const std::string& text) {
@@ -260,6 +281,11 @@ int runSubcommand(Task task, const std::vector<std::string>& args) {
     std::string text;
     if (!readInputText(inputPath, text)) {
         return kExitOperational;
+    }
+    const std::string encodingProblem = prepareInputText(text);
+    if (!encodingProblem.empty()) {
+        std::cerr << "pioneer " << name << ": " << encodingProblem << '\n';
+        return kExitUsage;
     }
 
     try {

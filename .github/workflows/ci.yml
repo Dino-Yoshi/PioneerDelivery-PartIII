@@ -1,0 +1,82 @@
+# Builds and tests pioneer on Linux, macOS and Windows with each platform's default
+# toolchain (GCC on Ubuntu, Apple Clang on macOS, MSVC on Windows). It then runs the three
+# examples from the command line the way a user would.
+name: CI
+
+on:
+  push:
+    branches: [integration, main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Toolchain versions
+        shell: bash
+        run: |
+          cmake --version
+          uname -a || true
+
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build --config Release
+
+      - name: Test
+        run: ctest --test-dir build -C Release --output-on-failure
+
+      - name: Run the three examples (bash)
+        shell: bash
+        run: |
+          set -eu
+          exe=$(find build -type f \( -name pioneer -o -name pioneer.exe \) | head -n 1)
+          echo "binary: $exe"
+          check() { # name expected actual
+            actual=$(printf '%s' "$3" | tr -d '\r')
+            if [ "$actual" != "$2" ]; then echo "FAIL $1"; echo "expected:"; echo "$2"; echo "actual:"; echo "$actual"; exit 1; fi
+            echo "ok   $1"
+          }
+          check schedule-file "$(printf 'max_profit=180.00\nselected_count=3\nselected_ids=B,D,F')" "$("$exe" schedule --machine --input examples/schedule.txt)"
+          check knapsack-file "$(printf 'max_profit=53\ntotal_fuel=10\nselected_count=3\nselected_ids=Q,R,S')" "$("$exe" knapsack --machine --input examples/knapsack.txt)"
+          check cleanup-file "$(printf 'max_deletions=1\nremoved_count=1\nremoved_indices=2')" "$("$exe" cleanup --machine --input examples/cleanup.txt)"
+          check schedule-stdin "$(printf 'max_profit=180.00\nselected_count=3\nselected_ids=B,D,F')" "$("$exe" schedule --machine < examples/schedule.txt)"
+          check knapsack-stdin "$(printf 'max_profit=53\ntotal_fuel=10\nselected_count=3\nselected_ids=Q,R,S')" "$("$exe" knapsack --machine < examples/knapsack.txt)"
+          check cleanup-stdin "$(printf 'max_deletions=1\nremoved_count=1\nremoved_indices=2')" "$("$exe" cleanup --machine < examples/cleanup.txt)"
+          "$exe" --help | head -3
+          set +e
+          "$exe" bogus > /dev/null 2>&1; test $? -eq 2 && echo "ok   unknown command exits 2"
+          "$exe" schedule --input no-such-file.txt > /dev/null 2>&1; test $? -eq 1 && echo "ok   missing file exits 1"
+
+      - name: Run an example in PowerShell (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $exe = (Get-ChildItem -Path build -Recurse -Filter pioneer.exe | Select-Object -First 1).FullName
+          Write-Host "binary: $exe"
+          & $exe schedule --input examples\schedule.txt
+          if ($LASTEXITCODE -ne 0) { throw "schedule failed with $LASTEXITCODE" }
+          Get-Content examples\knapsack.txt | & $exe knapsack
+          if ($LASTEXITCODE -ne 0) { throw "knapsack via pipe failed with $LASTEXITCODE" }
+          & $exe cleanup --input examples\cleanup.txt --machine
+          if ($LASTEXITCODE -ne 0) { throw "cleanup failed with $LASTEXITCODE" }
+
+      - name: Run an example in cmd (Windows)
+        if: runner.os == 'Windows'
+        shell: cmd
+        run: |
+          for /f "delims=" %%i in ('dir /s /b build\pioneer.exe') do set EXE=%%i
+          "%EXE%" cleanup < examples\cleanup.txt
+          if errorlevel 1 exit /b 1
