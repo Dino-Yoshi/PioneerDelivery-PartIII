@@ -1,6 +1,6 @@
 # DOC-02 — Final Task D test evidence, PDF report, and attribution
 
-- **Status:** NOT STARTED
+- **Status:** IN PROGRESS: evidence, README and report body done; owner-confirmed attribution and lesson PENDING
 - **Owner:** W5
 - **Prerequisite:** TEST-01; A-02; B-02; C-02
 - **Acceptance gate:** G5
