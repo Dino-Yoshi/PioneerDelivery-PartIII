@@ -1,8 +1,8 @@
-% AlgorithmReport.tex: skeleton for the Part III algorithm report.
+% AlgorithmReport.tex: algorithm report for Pioneer Delivery Part III.
 %
-% STATUS: NOT COMPILED. No TeX installation exists in the authoring container, so this
-% source has not been run through pdflatex. Every result, name, and lesson below is a
-% visible PENDING placeholder. Replace each placeholder only with owner-confirmed text.
+% STATUS: NOT COMPILED. The authoring container has no TeX installation, so this source has
+% not been run through pdflatex or latexmk. Every statement describes the code in src/ and
+% the results in docs/TestResults.md. Owner-confirmed items remain PENDING.
 
 \documentclass[11pt]{article}
 \usepackage[margin=1in]{geometry}
@@ -20,169 +20,182 @@
 
 \maketitle
 
-\section*{Document status}
+% ---------------------------------------------------------------------------
+\section{Introduction}
 
-This is a skeleton. Its structure follows the assignment and the planning documents
-in \texttt{docs/02\_TASK\_A.md}, \texttt{docs/03\_TASK\_B.md}, and \texttt{docs/04\_TASK\_C.md}.
-The formulas shown are the planned designs. Each one must be checked against the
-implementation before the report is submitted. The source has not been compiled.
+The \texttt{pioneer} program solves three planning problems with dynamic programming:
+weighted interval scheduling (Task A), 0/1 knapsack with a fuel budget (Task B), and event-log
+cleanup that keeps a required pattern as a subsequence (Task C). The solvers are in
+\texttt{src/Scheduling.cpp}, \texttt{src/Knapsack.cpp}, and \texttt{src/Cleanup.cpp}. The code is
+C++20. The recorded build used GCC 14.2.0 and CMake 3.31.6.
+
+Test IDs such as A-06 refer to rows in \texttt{docs/TestResults.md}. Each row lists the input,
+the expected value, the printed output, and the exit code.
 
 % ---------------------------------------------------------------------------
-\section{Task A: Maximum-profit delivery scheduling}
+\section{Task A: maximum-profit delivery scheduling}
 
-\subsection{DP state}
+\subsection{Preprocessing: sorting and the predecessor \texorpdfstring{$p(i)$}{p(i)}}
 
-Planned state: $DP[i]$ is the maximum total profit, in integer cents, that can be
-obtained from the first $i$ deliveries after sorting by nondecreasing finish time.
-\textbf{PENDING: owner-confirmed text}
+Deliveries are sorted by nondecreasing finish time. Ties are broken by start time, then by input
+position. The sorted deliveries are numbered $1, \ldots, n$, and index $0$ is a sentinel. Let
+$s_i$, $f_i$, and $v_i$ be the start, finish, and profit in integer cents of sorted delivery $i$.
 
-\subsection{Base case}
+The predecessor $p(i)$ is the largest index $j < i$ with $f_j \le s_i$, or $0$ if none exists.
+Because the finishes are nondecreasing, the indices in $1, \ldots, i-1$ with $f_j \le s_i$ form a
+prefix. The code runs \texttt{std::upper\_bound} on that prefix with key $s_i$, and the number of
+elements found is $p(i)$. Each predecessor costs $O(\log n)$, so all of them cost $O(n \log n)$.
 
-Planned base case: $DP[0] = 0$, the empty schedule.
-\textbf{PENDING: owner-confirmed text}
+\subsection{DP state, base case, and recurrence}
 
-\subsection{Recurrence}
-
-Planned recurrence, where $w_i$ is the profit of delivery $i$ and $p(i)$ is the last
-delivery that finishes no later than delivery $i$ starts:
-$DP[i] = \max(DP[i-1],\; w_i + DP[p(i)])$.
-\textbf{PENDING: owner-confirmed text}
-
-\subsection{Fill order and predecessor computation}
-
-Planned order: compute $p(i)$ for every $i$ with binary search over earlier finish times,
-then fill $DP$ for $i = 1, \ldots, n$.
-\textbf{PENDING: owner-confirmed text}
-
-\subsection{Traceback}
-
-Planned traceback: start at $i = n$. Exclude $i$ when $DP[i] = DP[i-1]$. Otherwise include
-$i$ and move to $p(i)$. Reverse the collected IDs into chronological order.
-\textbf{PENDING: owner-confirmed text}
-
-\subsection{Complexity}
-
-Planned complexity: $O(n \log n)$ time and $O(n)$ auxiliary space, plus the storage used by
-the sort.
-\textbf{PENDING: owner-confirmed text, measured or argued complexity}
-
-\subsection{Greedy counterexample}
-
-Earliest-finish greedy maximizes the number of deliveries, not the profit. The assignment
-example gives the optimum B, D, F at 180.00 and the greedy schedule A, C, E at 140.00.
-A smaller instance is $(A, 0, 2, 10)$, $(B, 0, 3, 100)$, $(C, 2, 4, 10)$. Greedy takes A and
-then C for 20, while B alone gives 100.
-\textbf{PENDING: owner-confirmed explanation and measured results}
-
-\subsection{Test references}
-
-Named cases A-01 to A-08 are in \texttt{tests/oracles/SchedulingOracleTests.cpp}.
-\textbf{PENDING: owner-confirmed test results, see Testing}
-
-% ---------------------------------------------------------------------------
-\section{Task B: Delivery selection with a fuel budget}
-
-\subsection{DP state}
-
-Planned state: $K[i][b]$ is the maximum profit obtainable from the first $i$ deliveries with
-total fuel at most $b$, for $0 \le i \le n$ and $0 \le b \le B$.
-\textbf{PENDING: owner-confirmed text}
-
-\subsection{Base case}
-
-Planned base cases: $K[0][b] = 0$ for every $b$, and $K[i][0] = 0$ for every $i$, because every fuel
-cost is positive.
-\textbf{PENDING: owner-confirmed text}
-
-\subsection{Recurrence}
-
-Planned recurrence, where $c_i$ and $v_i$ are the fuel cost and profit of delivery $i$:
-if $c_i > b$ then $K[i][b] = K[i-1][b]$; otherwise $K[i][b] = \max(K[i-1][b],\; v_i + K[i-1][b - c_i])$.
-\textbf{PENDING: owner-confirmed text}
-
-\subsection{Fill order}
-
-Planned order: rows $i = 1, \ldots, n$ in increasing order, and within each row $b = 0, \ldots, B$.
-\textbf{PENDING: owner-confirmed text}
-
-\subsection{Traceback}
-
-Planned traceback: start at $(n, B)$. Exclude $i$ when $K[i][b] = K[i-1][b]$. Otherwise include $i$
-and set $b \leftarrow b - c_i$. Continue to row $0$.
-\textbf{PENDING: owner-confirmed text}
-
-\subsection{Complexity}
-
-Planned complexity: $O(nB)$ time and $O(nB)$ space for the two-dimensional table, plus $O(n)$
-for the traceback.
-\textbf{PENDING: owner-confirmed text, measured or argued complexity}
-
-\subsection{Pseudo-polynomial note}
-
-The running time depends on the numeric value of $B$, not on the number of bits needed to write
-$B$. A budget of $10^9$ takes about $10^9$ columns per row, although its binary form has only 30 bits.
-The input size is $O(\log B)$ bits, so $O(nB)$ is pseudo-polynomial.
-\textbf{PENDING: owner-confirmed text}
-
-\subsection{Test references}
-
-Named cases B-01 to B-08 are in \texttt{tests/oracles/KnapsackOracleTests.cpp}.
-\textbf{PENDING: owner-confirmed test results, see Testing}
-
-% ---------------------------------------------------------------------------
-\section{Task C: Event-log cleanup with sequence alignment}
-
-\subsection{DP state}
-
-Planned state: $F[i][j]$ is the maximum number of deletions among the first $i$ source characters
-when exactly $j$ pattern characters are matched by those characters, in order. Every other
-examined character is skipped. A skipped eligible character earns one deletion.
-\textbf{PENDING: owner-confirmed text}
-
-\subsection{Base cases}
-
-Planned base cases: $F[0][0] = 0$. $F[0][j] = $ unreachable for $j > 0$. $F[i][0]$ equals the number
-of eligible positions in the first $i$ source characters.
-\textbf{PENDING: owner-confirmed text}
-
-\subsection{Recurrence}
-
-Planned recurrence for $i \ge 1$: skipping source character $i$ gives $F[i-1][j]$ plus one if
-character $i$ is eligible. Matching source character $i$ to pattern character $j$ is allowed when
-they are equal, and gives $F[i-1][j-1]$ with no credit. $F[i][j]$ is the maximum of the valid
-candidates.
-\textbf{PENDING: owner-confirmed text}
-
-\subsection{Impossible-state note}
-
-An unreachable state (for example $F[0][1]$) cannot be extended. The planned design marks it with
-a sentinel value of $-1$, and a candidate built on a sentinel is never considered. The
-sentinel is safe because every valid score is nonnegative.
-\textbf{PENDING: owner-confirmed text}
+The state $OPT(i)$ is the maximum total profit of a compatible subset of the sorted deliveries
+$1, \ldots, i$. The base case is $OPT(0) = 0$. For $1 \le i \le n$,
+\[
+OPT(i) = \max\bigl( OPT(i-1),\; v_i + OPT(p(i)) \bigr).
+\]
+The first term skips delivery $i$. The second term takes it. Once $i$ is taken, the only earlier
+deliveries that remain compatible are those finishing by $s_i$, and those are exactly deliveries
+$1, \ldots, p(i)$.
 
 \subsection{Fill order and traceback}
 
-Planned order: $i = 1, \ldots, n$ and $j = 0, \ldots, m$. Traceback starts at $(n, m)$, prefers a
-skip on ties, records the original index of each deleted eligible character, and reverses the list.
-\textbf{PENDING: owner-confirmed text}
+The table is filled for $i = 1, \ldots, n$. Both $OPT(i-1)$ and $OPT(p(i))$ are already known
+because $p(i) < i$.
+
+The traceback starts at $i = n$. When $OPT(i) = OPT(i-1)$, delivery $i$ is excluded and the walk
+moves to $i-1$. Otherwise delivery $i$ is included and the walk moves to $p(i)$. Ties exclude.
+The collected IDs are reversed into chronological order. Before returning, the code checks that
+neighbouring selected deliveries do not overlap and that their profits sum to $OPT(n)$.
 
 \subsection{Complexity}
 
-Planned complexity: $O(nm)$ time and $O(nm)$ auxiliary space, where $n = |source|$ and $m = |pattern|$.
-\textbf{PENDING: owner-confirmed text, measured or argued complexity}
+Sorting costs $O(n \log n)$ time. The predecessor search costs $O(n \log n)$ time. The fill and
+traceback cost $O(n)$ time. The total time is $O(n \log n)$. The auxiliary arrays (sort order,
+starts, finishes, profits, $p$, and $OPT$) hold $O(n)$ entries. \texttt{std::sort} also uses
+$O(\log n)$ stack space.
 
-\subsection{Test references}
+\subsection{Why earliest-finish greedy fails}
 
-Named cases C-01 to C-10 are in \texttt{tests/oracles/CleanupOracleTests.cpp}. C-01 to C-04 are the
-four official examples.
-\textbf{PENDING: owner-confirmed test results, see Testing}
+The earliest-finish greedy repeatedly takes the compatible delivery that finishes first. It
+maximizes the number of deliveries, not the profit. The assignment example shows this. The
+earliest-finish schedule A, C, E earns 140.00, but the optimum B, D, F earns 180.00.
+
+Test A-06 gives a small counterexample with three deliveries: A $[0,2)$ 10.00, B $[0,3)$ 100.00,
+and C $[2,4)$ 10.00. Greedy takes A, which finishes at 2, and then C, which starts at 2 and is
+compatible with A. Its total is 20.00. Delivery B alone earns 100.00, and the solver returns
+100.00 for A-06.
+
+% ---------------------------------------------------------------------------
+\section{Task B: delivery selection with a fuel budget}
+
+\subsection{DP state and base cases}
+
+The state $K(i,b)$ is the maximum profit of a subset of deliveries $1, \ldots, i$ whose total fuel
+is at most $b$, for $0 \le i \le n$ and $0 \le b \le B$. The base cases are $K(0,b) = 0$ for every
+$b$, because there are no deliveries, and $K(i,0) = 0$, because every fuel cost is at least 1 and
+nothing fits in zero fuel. The table is one flat array of zeros, so both base cases hold without
+extra code.
+
+\subsection{Recurrence}
+
+Let $c_i \ge 1$ be the fuel cost and $v_i \ge 0$ the profit of delivery $i$. For $1 \le i \le n$
+and $0 \le b \le B$:
+\[
+K(i,b) = K(i-1,b) \quad \mbox{if } c_i > b,
+\]
+\[
+K(i,b) = \max\bigl( K(i-1,b),\; v_i + K(i-1,\, b - c_i) \bigr) \quad \mbox{if } c_i \le b.
+\]
+
+\subsection{Fill order and traceback}
+
+The table is filled row by row: $i = 1, \ldots, n$, and within each row $b = 0, \ldots, B$. Each
+cell reads only row $i-1$, so no delivery is counted twice.
+
+The traceback starts at $(n, B)$. When $K(i,b) = K(i-1,b)$, delivery $i$ is excluded and the walk
+stays in column $b$. Otherwise delivery $i$ is included and the walk moves to $(i-1, b - c_i)$. Ties
+exclude. The code then sums fuel and profit over the selected deliveries, rejects duplicate IDs,
+and checks that the fuel is at most $B$ and the profit equals $K(n,B)$.
+
+\subsection{Complexity and why the running time is pseudo-polynomial}
+
+The time is $O(nB)$, because the table has $(n+1)(B+1)$ cells and each costs $O(1)$. The space is
+$O(nB)$ for the table. The traceback and the selection flags cost $O(n)$.
+
+The running time grows with the numeric value of $B$. The input stores $B$ in about $\log_2 B$
+bits, so a budget that takes a few digits to write can require on the order of $B$ steps. That
+makes $O(nB)$ pseudo-polynomial, not polynomial in the input size.
+
+For one delivery and $B = 999999999999$, the table would have $2 \times 10^{12}$ cells. At 8 bytes
+per cell that is 16 TB. The solver refuses the input before allocating anything. It exits with
+status 1 and prints the message quoted in the README. The largest accepted table is 256 MiB,
+which is 33,554,432 cells. The test \texttt{KnapsackTests} exercises this boundary with budget
+16777215 and one delivery, and it passes.
+
+% ---------------------------------------------------------------------------
+\section{Task C: event-log cleanup with sequence alignment}
+
+\subsection{DP state and impossible states}
+
+Let $n = |source|$ and $m = |pattern|$. Source position $i$ (1-based) is eligible when its
+zero-based index $i-1$ is in \texttt{targetIndices}. The state $F(i,j)$ is the maximum number of
+deletions among the first $i$ source characters, when the first $j$ pattern characters are matched,
+in order, by kept source characters among those $i$. Every source character is either matched to a
+pattern character, deleted (only if eligible), or kept without matching.
+
+$F(i,j)$ is unreachable when the pattern prefix of length $j$ cannot be found inside the first $i$
+source characters. For example, $F(0,j)$ is unreachable for every $j > 0$. The code stores this
+state as $-1$. Valid scores are nonnegative, so $-1$ cannot be confused with a score, and the code
+never adds to it or compares it as a score.
+
+The unreachable marker matters because treating it as $0$ would be wrong. A state with value 0 would
+let a path claim that pattern characters were matched before any source character was read. The
+deletion count of that path would then be reported as valid even though the kept string may not
+contain the pattern. The marker makes every such path unavailable for extension.
+
+\subsection{Base cases and recurrence}
+
+The base cases are $F(0,0) = 0$ and $F(0,j) = \bot$ for $j \ge 1$. The value $F(i,0)$ is the number
+of eligible positions among the first $i$ source characters. The skip transition gives this value
+without a separate formula.
+
+For $1 \le i \le n$ and $0 \le j \le m$, let $e_i = 1$ if source position $i$ is eligible and
+$e_i = 0$ otherwise. The two candidates are:
+\begin{itemize}
+\item Skip (source position $i$ is not matched). If $F(i-1,j)$ is reachable, the candidate is
+  $F(i-1,j) + e_i$. An eligible skipped character is deleted, and an ineligible one is kept.
+\item Match (source position $i$ matches pattern position $j$). If $j \ge 1$, the characters are
+  equal, and $F(i-1,j-1)$ is reachable, the candidate is $F(i-1,j-1)$. No deletion is credited,
+  because the character is needed by the pattern.
+\end{itemize}
+$F(i,j)$ is the larger candidate, or $\bot$ if neither exists.
+
+\subsection{Fill order and traceback}
+
+The outer loop runs over $i = 1, \ldots, n$ and the inner loop over $j = 0, \ldots, m$. Row $i-1$ is
+complete before row $i$ reads it.
+
+The traceback starts at $(n, m)$. A skip is preferred whenever it reproduces $F(i,j)$. Otherwise the
+match must reproduce it. Each deleted eligible character is recorded by its original index. The list
+is reversed into ascending order. Before returning, the code checks that the count equals the
+optimum, that every index is eligible and in ascending order, and that the source with those
+positions removed still contains the pattern (a two-pointer check that does not use the table).
+
+\subsection{Example C-05}
+
+Take \texttt{abaaba}, pattern \texttt{aba}, and eligible indices $0, 1, 2$. The DP returns 3. It
+matches the pattern at positions 3, 4, and 5 and deletes positions 0, 1, and 2. The earliest
+alignment matches the pattern at positions 0, 1, and 2. That alignment uses all three eligible
+positions, so the greedy deletion count is 0. The DP is therefore not a greedy alignment.
+
+\subsection{Complexity}
+
+The time is $O(nm)$, because the table has $(n+1)(m+1)$ cells and each costs $O(1)$. The traceback
+costs $O(n+m)$. The auxiliary space is $O(nm)$ for the table, which uses 4-byte cells and is limited
+to 256 MiB, or 67,108,864 cells.
 
 % ---------------------------------------------------------------------------
 \section{Testing}
-
-Three oracle programs check each task against an independent brute-force enumeration. Phase 1
-checks the oracle against the expected values. Phase 2 compares the production solver with the
-oracle and checks the reconstruction invariants.
 
 \begin{lstlisting}
 cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
@@ -190,36 +203,63 @@ cmake --build build
 ctest --test-dir build --output-on-failure
 \end{lstlisting}
 
+The CTest run passed 9 of 9 tests. Every named case in \texttt{docs/TestResults.md} matched its
+expected optimum, and every printed selection satisfied its validity check. Eight invalid inputs
+exited with status 2, and the table-limit input exited with status 1.
+
 \begin{table}[h]
 \centering
 \begin{tabular}{llll}
 \toprule
-Program & Named cases & Seeds & Result \\
+Program & Named cases & Seeds 1 to 25 (checks) & Result \\
 \midrule
-SchedulingOracleTests & A-01 to A-08 & 1 to 25 & \textbf{PENDING: owner-confirmed result} \\
-KnapsackOracleTests & B-01 to B-08 & 1 to 25 & \textbf{PENDING: owner-confirmed result} \\
-CleanupOracleTests & C-01 to C-10 & 1 to 25 & \textbf{PENDING: owner-confirmed result} \\
+SchedulingOracleTests & A-01 to A-08 & 66 of 66 & self-check 8 of 8 \\
+KnapsackOracleTests & B-01 to B-08 & 66 of 66 & self-check 8 of 8 \\
+CleanupOracleTests & C-01 to C-10 & 70 of 70 & self-check 10 of 10 \\
 \bottomrule
 \end{tabular}
-\caption{Oracle test programs. Results are recorded in \texttt{docs/TestResults.md}.}
+\caption{Oracle programs. Each production comparison checks the optimum and the validity invariant.}
 \end{table}
 
-\textbf{PENDING: owner-confirmed summary of the test evidence, with the seeds and counts from the
-actual runs}
+The unit test executables report 1878 of 1878 checks (scheduling), 2181 of 2181 checks
+(knapsack), and 95741 of 95741 checks (cleanup, including a sweep of 15932 generated cases).
+
+The oracles enumerate every subset: all subsets for A and B (at most 10 deliveries), and all subsets
+of the eligible indices for C (at most 12). They share no DP code with the solvers. They were
+written before the solvers were merged, and the worker that wrote them never opened the solver
+sources. The mutation test recorded in \texttt{docs/gates/G3.md} injected four bugs. Each bug was
+caught by at least one suite: a touching-interval boundary error in scheduling, item reuse in
+knapsack, ignoring eligibility in cleanup, and an off-by-one compatibility error in scheduling. That
+mutation run was not repeated for this report.
+
+The limits are that the oracles check small inputs only, and the mutation test covers four
+mutants, not every possible fault.
 
 % ---------------------------------------------------------------------------
 \section{Attribution}
 
-\textbf{PENDING: owner-confirmed attribution of human authors and contributors}
-
-\textbf{PENDING: owner-confirmed description of generative AI tools used, how they were used, and
-how the code and explanations were independently verified}
+\begin{itemize}
+\item Claude Code with Claude Sonnet 5.5 acted as orchestrator. It read the assignment and the
+  design handoff, created the repository and branches, dispatched and reviewed the workers,
+  re-ran every build and test itself, ran a mutation test of the test suites, merged the branches,
+  wrote the gate records, and made the Git commits.
+\item Kiro CLI with Claude Haiku 5.5 ran five worker sessions: W1 the CMake/CTest skeleton, input
+  parsers, output formatter, command-line interface, and help; W2 Task A (scheduling); W3 Task B
+  (knapsack); W4 Task C (cleanup); W5 the independent brute-force oracle programs, test fixtures,
+  and documentation drafts.
+\item Verification performed: independent clean builds in a container (GCC 14.2, CMake 3.31) and on
+  the host (GCC 16.2, CMake 4.4), 9 of 9 CTest tests, brute-force oracle comparison on named cases
+  plus seeds 1 to 25, a four-bug mutation test, end-to-end CLI checks. The numbers come from
+  \texttt{docs/gates/}.
+\item The human project owner helped set up and plan the project and was present throughout, with
+  check-ins on the implementation. Exact roles, names and the original Pioneer Delivery developer:
+  \textbf{PENDING: owner confirmation.} Who prepared the original design handoff documents:
+  \textbf{PENDING: owner confirmation.}
+\end{itemize}
 
 % ---------------------------------------------------------------------------
 \section{Challenge and lesson learned}
 
-\textbf{PENDING: owner-confirmed challenge encountered during the work}
-
-\textbf{PENDING: owner-confirmed lesson learned}
+\textbf{PENDING: owner-confirmed challenge and lesson}
 
 \end{document}
