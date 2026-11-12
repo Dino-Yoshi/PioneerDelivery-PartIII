@@ -27,6 +27,11 @@ add_executable(pioneer src/main.cpp)
 target_link_libraries(pioneer PRIVATE pioneer_core)
 target_compile_options(pioneer PRIVATE ${pioneerWarnings})
 
+option(PIONEER_STATIC "Link the pioneer executable statically for release packaging" OFF)
+if(PIONEER_STATIC)
+  target_link_options(pioneer PRIVATE -static)
+endif()
+
 include(CTest)
 if(BUILD_TESTING)
   add_executable(parser_tests tests/ParserTests.cpp)
