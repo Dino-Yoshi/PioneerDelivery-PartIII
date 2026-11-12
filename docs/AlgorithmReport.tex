@@ -1,0 +1,225 @@
+% AlgorithmReport.tex: skeleton for the Part III algorithm report.
+%
+% STATUS: NOT COMPILED. No TeX installation exists in the authoring container, so this
+% source has not been run through pdflatex. Every result, name, and lesson below is a
+% visible PENDING placeholder. Replace each placeholder only with owner-confirmed text.
+
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{booktabs}
+\usepackage{listings}
+\usepackage[hidelinks]{hyperref}
+
+\lstset{basicstyle=\ttfamily\small, breaklines=true, frame=single}
+
+\title{Pioneer Delivery Part III: Dynamic Programming Algorithm Report}
+\author{\textbf{PENDING: owner-confirmed author list}}
+\date{\textbf{PENDING: owner-confirmed submission date}}
+
+\begin{document}
+
+\maketitle
+
+\section*{Document status}
+
+This is a skeleton. Its structure follows the assignment and the planning documents
+in \texttt{docs/02\_TASK\_A.md}, \texttt{docs/03\_TASK\_B.md}, and \texttt{docs/04\_TASK\_C.md}.
+The formulas shown are the planned designs. Each one must be checked against the
+implementation before the report is submitted. The source has not been compiled.
+
+% ---------------------------------------------------------------------------
+\section{Task A: Maximum-profit delivery scheduling}
+
+\subsection{DP state}
+
+Planned state: $DP[i]$ is the maximum total profit, in integer cents, that can be
+obtained from the first $i$ deliveries after sorting by nondecreasing finish time.
+\textbf{PENDING: owner-confirmed text}
+
+\subsection{Base case}
+
+Planned base case: $DP[0] = 0$, the empty schedule.
+\textbf{PENDING: owner-confirmed text}
+
+\subsection{Recurrence}
+
+Planned recurrence, where $w_i$ is the profit of delivery $i$ and $p(i)$ is the last
+delivery that finishes no later than delivery $i$ starts:
+$DP[i] = \max(DP[i-1],\; w_i + DP[p(i)])$.
+\textbf{PENDING: owner-confirmed text}
+
+\subsection{Fill order and predecessor computation}
+
+Planned order: compute $p(i)$ for every $i$ with binary search over earlier finish times,
+then fill $DP$ for $i = 1, \ldots, n$.
+\textbf{PENDING: owner-confirmed text}
+
+\subsection{Traceback}
+
+Planned traceback: start at $i = n$. Exclude $i$ when $DP[i] = DP[i-1]$. Otherwise include
+$i$ and move to $p(i)$. Reverse the collected IDs into chronological order.
+\textbf{PENDING: owner-confirmed text}
+
+\subsection{Complexity}
+
+Planned complexity: $O(n \log n)$ time and $O(n)$ auxiliary space, plus the storage used by
+the sort.
+\textbf{PENDING: owner-confirmed text, measured or argued complexity}
+
+\subsection{Greedy counterexample}
+
+Earliest-finish greedy maximizes the number of deliveries, not the profit. The assignment
+example gives the optimum B, D, F at 180.00 and the greedy schedule A, C, E at 140.00.
+A smaller instance is $(A, 0, 2, 10)$, $(B, 0, 3, 100)$, $(C, 2, 4, 10)$. Greedy takes A and
+then C for 20, while B alone gives 100.
+\textbf{PENDING: owner-confirmed explanation and measured results}
+
+\subsection{Test references}
+
+Named cases A-01 to A-08 are in \texttt{tests/oracles/SchedulingOracleTests.cpp}.
+\textbf{PENDING: owner-confirmed test results, see Testing}
+
+% ---------------------------------------------------------------------------
+\section{Task B: Delivery selection with a fuel budget}
+
+\subsection{DP state}
+
+Planned state: $K[i][b]$ is the maximum profit obtainable from the first $i$ deliveries with
+total fuel at most $b$, for $0 \le i \le n$ and $0 \le b \le B$.
+\textbf{PENDING: owner-confirmed text}
+
+\subsection{Base case}
+
+Planned base cases: $K[0][b] = 0$ for every $b$, and $K[i][0] = 0$ for every $i$, because every fuel
+cost is positive.
+\textbf{PENDING: owner-confirmed text}
+
+\subsection{Recurrence}
+
+Planned recurrence, where $c_i$ and $v_i$ are the fuel cost and profit of delivery $i$:
+if $c_i > b$ then $K[i][b] = K[i-1][b]$; otherwise $K[i][b] = \max(K[i-1][b],\; v_i + K[i-1][b - c_i])$.
+\textbf{PENDING: owner-confirmed text}
+
+\subsection{Fill order}
+
+Planned order: rows $i = 1, \ldots, n$ in increasing order, and within each row $b = 0, \ldots, B$.
+\textbf{PENDING: owner-confirmed text}
+
+\subsection{Traceback}
+
+Planned traceback: start at $(n, B)$. Exclude $i$ when $K[i][b] = K[i-1][b]$. Otherwise include $i$
+and set $b \leftarrow b - c_i$. Continue to row $0$.
+\textbf{PENDING: owner-confirmed text}
+
+\subsection{Complexity}
+
+Planned complexity: $O(nB)$ time and $O(nB)$ space for the two-dimensional table, plus $O(n)$
+for the traceback.
+\textbf{PENDING: owner-confirmed text, measured or argued complexity}
+
+\subsection{Pseudo-polynomial note}
+
+The running time depends on the numeric value of $B$, not on the number of bits needed to write
+$B$. A budget of $10^9$ takes about $10^9$ columns per row, although its binary form has only 30 bits.
+The input size is $O(\log B)$ bits, so $O(nB)$ is pseudo-polynomial.
+\textbf{PENDING: owner-confirmed text}
+
+\subsection{Test references}
+
+Named cases B-01 to B-08 are in \texttt{tests/oracles/KnapsackOracleTests.cpp}.
+\textbf{PENDING: owner-confirmed test results, see Testing}
+
+% ---------------------------------------------------------------------------
+\section{Task C: Event-log cleanup with sequence alignment}
+
+\subsection{DP state}
+
+Planned state: $F[i][j]$ is the maximum number of deletions among the first $i$ source characters
+when exactly $j$ pattern characters are matched by those characters, in order. Every other
+examined character is skipped. A skipped eligible character earns one deletion.
+\textbf{PENDING: owner-confirmed text}
+
+\subsection{Base cases}
+
+Planned base cases: $F[0][0] = 0$. $F[0][j] = $ unreachable for $j > 0$. $F[i][0]$ equals the number
+of eligible positions in the first $i$ source characters.
+\textbf{PENDING: owner-confirmed text}
+
+\subsection{Recurrence}
+
+Planned recurrence for $i \ge 1$: skipping source character $i$ gives $F[i-1][j]$ plus one if
+character $i$ is eligible. Matching source character $i$ to pattern character $j$ is allowed when
+they are equal, and gives $F[i-1][j-1]$ with no credit. $F[i][j]$ is the maximum of the valid
+candidates.
+\textbf{PENDING: owner-confirmed text}
+
+\subsection{Impossible-state note}
+
+An unreachable state (for example $F[0][1]$) cannot be extended. The planned design marks it with
+a sentinel value of $-1$, and a candidate built on a sentinel is never considered. The
+sentinel is safe because every valid score is nonnegative.
+\textbf{PENDING: owner-confirmed text}
+
+\subsection{Fill order and traceback}
+
+Planned order: $i = 1, \ldots, n$ and $j = 0, \ldots, m$. Traceback starts at $(n, m)$, prefers a
+skip on ties, records the original index of each deleted eligible character, and reverses the list.
+\textbf{PENDING: owner-confirmed text}
+
+\subsection{Complexity}
+
+Planned complexity: $O(nm)$ time and $O(nm)$ auxiliary space, where $n = |source|$ and $m = |pattern|$.
+\textbf{PENDING: owner-confirmed text, measured or argued complexity}
+
+\subsection{Test references}
+
+Named cases C-01 to C-10 are in \texttt{tests/oracles/CleanupOracleTests.cpp}. C-01 to C-04 are the
+four official examples.
+\textbf{PENDING: owner-confirmed test results, see Testing}
+
+% ---------------------------------------------------------------------------
+\section{Testing}
+
+Three oracle programs check each task against an independent brute-force enumeration. Phase 1
+checks the oracle against the expected values. Phase 2 compares the production solver with the
+oracle and checks the reconstruction invariants.
+
+\begin{lstlisting}
+cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+ctest --test-dir build --output-on-failure
+\end{lstlisting}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{llll}
+\toprule
+Program & Named cases & Seeds & Result \\
+\midrule
+SchedulingOracleTests & A-01 to A-08 & 1 to 25 & \textbf{PENDING: owner-confirmed result} \\
+KnapsackOracleTests & B-01 to B-08 & 1 to 25 & \textbf{PENDING: owner-confirmed result} \\
+CleanupOracleTests & C-01 to C-10 & 1 to 25 & \textbf{PENDING: owner-confirmed result} \\
+\bottomrule
+\end{tabular}
+\caption{Oracle test programs. Results are recorded in \texttt{docs/TestResults.md}.}
+\end{table}
+
+\textbf{PENDING: owner-confirmed summary of the test evidence, with the seeds and counts from the
+actual runs}
+
+% ---------------------------------------------------------------------------
+\section{Attribution}
+
+\textbf{PENDING: owner-confirmed attribution of human authors and contributors}
+
+\textbf{PENDING: owner-confirmed description of generative AI tools used, how they were used, and
+how the code and explanations were independently verified}
+
+% ---------------------------------------------------------------------------
+\section{Challenge and lesson learned}
+
+\textbf{PENDING: owner-confirmed challenge encountered during the work}
+
+\textbf{PENDING: owner-confirmed lesson learned}
+
+\end{document}
