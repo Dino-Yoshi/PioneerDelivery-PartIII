@@ -269,7 +269,7 @@ it writes `dist/pioneer-linux-x86_64.tar.gz` and a `.sha256` file; two builds of
 produced byte-identical archives). The archive holds the `pioneer` binary, a one-page
 `README.txt`, and the three example inputs. Nothing else is needed to run it.
 
-Tested: the archive with SHA-256 `3b126a7246bfb062cd40c04a5562420d04796371be2dcc10444f54b813cde4b0` was extracted and run in a clean
+Tested: the archive with SHA-256 `932510957cea3db619c56f769c6b8ffc039438b9ae681650e55c6bdc3548f802` was extracted and run in a clean
 Debian GNU/Linux 13 (trixie) x86_64 container that has no compiler, no CMake and no network, and all
 three examples printed the expected results. Other distributions and CPU types are not tested.
 The archive is not published anywhere; build it with the script above.
